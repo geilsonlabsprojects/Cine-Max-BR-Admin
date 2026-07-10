@@ -1,18 +1,23 @@
 /**
  * Firebase initialization and database services.
+ * Credentials are now externalized for security.
  */
 
 const firebaseConfig = {
-    apiKey: "AIzaSyC8uVpbtW7gs73ydp2u2eJAVGIXK3dwHr8",
-    projectId: "cine-max-br",
-    databaseURL: "https://cine-max-br-default-rtdb.firebaseio.com",
-    storageBucket: "cine-max-br.firebasestorage.app",
-    appId: "1:388609107323:android:5233689d7da7b54b0d49de"
+    apiKey: window.CINE_MAX_CONFIG?.FIREBASE_API_KEY || "",
+    authDomain: window.CINE_MAX_CONFIG?.FIREBASE_AUTH_DOMAIN || "",
+    projectId: window.CINE_MAX_CONFIG?.FIREBASE_PROJECT_ID || "",
+    databaseURL: window.CINE_MAX_CONFIG?.FIREBASE_DATABASE_URL || "",
+    storageBucket: window.CINE_MAX_CONFIG?.FIREBASE_STORAGE_BUCKET || "",
+    messagingSenderId: window.CINE_MAX_CONFIG?.FIREBASE_SENDER_ID || "",
+    appId: window.CINE_MAX_CONFIG?.FIREBASE_APP_ID || ""
 };
 
 // Initialize Firebase if not already initialized
-if (!firebase.apps.length) {
+if (!firebase.apps.length && firebaseConfig.apiKey) {
     firebase.initializeApp(firebaseConfig);
+} else if (!firebaseConfig.apiKey) {
+    console.error("Firebase Configuration missing! Please check config.js or environment variables.");
 }
 
 export const db = firebase.database();

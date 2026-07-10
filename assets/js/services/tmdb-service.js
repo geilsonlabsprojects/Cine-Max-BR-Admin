@@ -2,7 +2,7 @@
  * Service to interact with TMDB API.
  */
 
-const TMDB_API_KEY = "184bf16ea3adb096d92e089bb1beea77";
+const TMDB_API_KEY = window.CINE_MAX_CONFIG?.TMDB_API_KEY || "";
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/original";
 
