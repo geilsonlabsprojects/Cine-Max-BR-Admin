@@ -9,6 +9,34 @@
 }
 .dashboard-widget:hover {
     border-color: var(--accent);
+    box-shadow: 0 0 30px var(--accent-glow);
+}
+
+.stat-card {
+    background: var(--surface-light);
+    padding: 2rem;
+    border-radius: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition);
+    border: 1px solid var(--border);
+}
+.stat-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--accent);
+}
+.stat-card i {
+    position: absolute;
+    right: -10px;
+    bottom: -10px;
+    font-size: 5rem;
+    opacity: 0.05;
+    transform: rotate(-15deg);
+    transition: var(--transition);
+}
+.stat-card:hover i {
+    opacity: 0.1;
+    transform: rotate(0deg) scale(1.1);
 }
 
 .quick-action-btn {
