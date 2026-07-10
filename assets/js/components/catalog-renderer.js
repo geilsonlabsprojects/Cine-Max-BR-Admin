@@ -30,21 +30,21 @@ export function renderCatalog() {
         const featuredBadge = item.featured ? '<span class="badge bg-warning text-dark ms-2" style="font-size: 8px;">DESTAQUE</span>' : '';
 
         const itemHtml = `
-            <div class="media-item animate-fade-in" data-title="${item.title.toLowerCase()}" data-id="${item.id}">
+            <div class="media-item animate-fade-in" data-id="${item.id}">
                 <div class="d-flex align-items-center gap-3">
                     <input type="checkbox" data-id="${item.id}" ${state.selectedIds.has(item.id) ? 'checked' : ''} class="form-check-input">
                     <img src="${item.poster || ''}" class="poster-mini" loading="lazy">
                 </div>
-                <div>
-                    <div class="fw-bold text-truncate" style="max-width: 300px;">${item.title} ${featuredBadge}</div>
-                    <div class="small text-dim text-truncate" style="max-width: 300px;">${item.genre || ''}</div>
+                <div class="media-info-main">
+                    <div class="title-primary text-truncate" style="max-width: 450px;">${item.title} ${featuredBadge}</div>
+                    <div class="genre-secondary text-truncate" style="max-width: 450px;">${item.genre || 'Sem Gênero'}</div>
                 </div>
-                <div class="badge-type ${badgeClass}">${item.type.toUpperCase()} ${item.type === 'series' ? `(${item.seasons?.length || 0} Temp)` : ''}</div>
-                <div class="text-dim text-center">${item.year || 'N/A'}</div>
-                <div class="text-dim text-center"><i class="fas fa-eye me-1"></i>${item.views || 0}</div>
-                <div class="d-flex gap-2 justify-content-end">
-                    <button class="btn btn-sm btn-outline-info btn-edit" data-id="${item.id}" title="Editar"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${item.id}" data-old="${item.isOld || false}" title="Excluir"><i class="fas fa-trash"></i></button>
+                <div class="badge-type ${badgeClass}">${item.type === 'movie' ? 'Filme' : 'Série'} ${item.type === 'series' ? `(${item.seasons?.length || 0} Temp)` : ''}</div>
+                <div class="fw-bold text-center" style="opacity: 0.7;">${item.year || 'N/A'}</div>
+                <div class="views-count text-center"><i class="fas fa-eye me-2 text-info"></i>${item.views || 0}</div>
+                <div class="btn-action-group">
+                    <button class="btn btn-sm btn-outline-info btn-catalog-action btn-edit" data-id="${item.id}" title="Editar"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-outline-danger btn-catalog-action btn-delete" data-id="${item.id}" data-old="${item.isOld || false}" title="Excluir"><i class="fas fa-trash"></i></button>
                 </div>
             </div>
         `;
