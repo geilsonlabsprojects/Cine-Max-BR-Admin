@@ -1,5 +1,5 @@
 /**
- * Main Application Entry Point.
+ * CineMaxBR Admin Portal - Core Engine Otimizado
  */
 import { subscribeToMedia, subscribeToOldMovies, subscribeToFranchises } from '../services/firebase-service.js';
 import { state, updateMedia, updateFranchises } from './state.js';
@@ -12,21 +12,35 @@ import { initDashboard, updateDashboardStats } from '../components/dashboard.js'
 import { initAccessManager } from '../components/access-manager.js';
 import { showToast } from '../components/toast.js';
 
+// Inicialização Global
 document.addEventListener('DOMContentLoaded', () => {
-    // Global toast availability
     window.showToast = showToast;
-    // Initialize services
-    subscribeToMedia((data, isOld) => {
-        updateMedia(data, isOld);
-        renderCatalog();
-        renderFranchises(); // Update franchise select if needed
-        updateDashboardStats();
+
+    try {
+        initAppFlow();
+        attachGlobalListeners();
+
+        // Tab inicial segura
+        showTab('dashboard');
+    } catch (error) {
+        console.error("Erro crítico na inicialização do Admin:", error);
+        showToast("Erro ao carregar painel. Verifique o console.", "danger");
+    }
+});
+
+/**
+ * Gerenciamento de Fluxo de Dados com Redução de Overload
+ */
+function initAppFlow() {
+    // Subscreve ao Media (Novo e Antigo) com debouncing implícito pela renderização do estado
+    subscribeToMedia((data) => {
+        updateMedia(data, false);
+        refreshUI();
     });
 
-    subscribeToOldMovies((data, isOld) => {
-        updateMedia(data, isOld);
-        renderCatalog();
-        updateDashboardStats();
+    subscribeToOldMovies((data) => {
+        updateMedia(data, true);
+        refreshUI();
     });
 
     subscribeToFranchises((franchises) => {
@@ -34,45 +48,92 @@ document.addEventListener('DOMContentLoaded', () => {
         renderFranchises();
     });
 
-    // Initialize components
+    // Inits de Componentes
     initMediaForm();
     initDashboard();
     initAccessManager();
+}
 
-    // Event Delegation / Global bindings for HTML onclicks if needed
-    attachGlobalListeners();
-});
+/**
+ * Atualização Centralizada da UI
+ */
+function refreshUI() {
+    renderCatalog();
+    renderFranchises();
+    updateDashboardStats();
+}
 
+/**
+ * Listeners Globais Otimizados
+ */
 function attachGlobalListeners() {
-    // Navigation
-    document.querySelectorAll('.nav-item').forEach(nav => {
-        const tabId = nav.getAttribute('data-tab') || (nav.onclick ? nav.onclick.toString().match(/'(.*?)'/)?.[1] : null);
+    // Delegação de eventos para Navegação
+    document.querySelectorAll('.nav-link, .nav-item').forEach(nav => {
+        const tabId = nav.getAttribute('data-tab');
         if (tabId) {
-            nav.onclick = (e) => showTab(tabId, e);
+            nav.addEventListener('click', (e) => {
+                e.preventDefault();
+                showTab(tabId, e);
+            });
         }
     });
 
-    // Media Type Toggle
-    document.getElementById('typeM').onclick = () => setMediaTypeUI('movie');
-    document.getElementById('typeS').onclick = () => setMediaTypeUI('series');
+    // Controles de Formulário
+    const btnM = document.getElementById('typeM');
+    const btnS = document.getElementById('typeS');
+    if (btnM) btnM.onclick = () => setMediaTypeUI('movie');
+    if (btnS) btnS.onclick = () => setMediaTypeUI('series');
 
-    // Previews & Analysis
-    document.getElementById('btnPreviewTrailer').onclick = () => showVideoPreview('trailerPreview', document.getElementById('mTrailer').value);
-    document.getElementById('btnPreviewVideo').onclick = () => showVideoPreview('trailerPreview', document.getElementById('mUrl').value);
-    document.getElementById('btnAnalyzeLink').onclick = () => {
-        const analysis = analyzeLinkType(document.getElementById('mUrl').value);
-        showAnalysis('analysisResult', analysis);
-    };
+    // Previews de Mídia
+    const btnPrevTrailer = document.getElementById('btnPreviewTrailer');
+    const btnPrevVideo = document.getElementById('btnPreviewVideo');
+    const btnAnalyze = document.getElementById('btnAnalyzeLink');
 
-    // Form Submissions
+    if (btnPrevTrailer) {
+        btnPrevTrailer.onclick = () => {
+            const val = document.getElementById('mTrailer')?.value;
+            if (val) showVideoPreview('trailerPreview', val);
+        };
+    }
+
+    if (btnPrevVideo) {
+        btnPrevVideo.onclick = () => {
+            const val = document.getElementById('mUrl')?.value;
+            if (val) showVideoPreview('videoPreview', val);
+        };
+    }
+
+    if (btnAnalyze) {
+        btnAnalyze.onclick = () => {
+            const url = document.getElementById('mUrl')?.value;
+            if (url) {
+                const analysis = analyzeLinkType(url);
+                showAnalysis('analysisResult', analysis);
+            }
+        };
+    }
+
+    // Ações de Salvar e TMDB
     document.getElementById('btnSaveMedia').onclick = handleSaveMedia;
     document.getElementById('btnSaveFranchise').onclick = handleSaveFranchise;
-    const btnAddSeason = document.getElementById('btnAddSeason');
-    if (btnAddSeason) btnAddSeason.onclick = () => addSeason();
     document.getElementById('btnFetchTMDB').onclick = handleTMDBFetch;
 
-    // Catalog search & bulk
-    document.getElementById('search').onkeyup = filterList;
-    document.getElementById('selectAll').onchange = (e) => selectAll(e.target.checked);
-    document.getElementById('btnDeleteBulk').onclick = handleDeleteBulk;
+    const btnAddSeason = document.getElementById('btnAddSeason');
+    if (btnAddSeason) btnAddSeason.onclick = addSeason;
+
+    // Busca e Ações em Massa no Catálogo
+    const searchInput = document.getElementById('search');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => filterList(e.target.value));
+    }
+
+    const checkAll = document.getElementById('selectAll');
+    if (checkAll) {
+        checkAll.onchange = (e) => selectAll(e.target.checked);
+    }
+
+    const btnDeleteBulk = document.getElementById('btnDeleteBulk');
+    if (btnDeleteBulk) {
+        btnDeleteBulk.onclick = handleDeleteBulk;
+    }
 }
