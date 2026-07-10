@@ -7,6 +7,7 @@ import { extractUrl } from '../utils/url-helper.js';
 import { updateImagePreview, showVideoPreview, analyzeLinkType, showAnalysis } from '../utils/dom-helper.js';
 import { showToast } from './toast.js';
 import { searchTMDB, getTMDBDetails } from '../services/tmdb-service.js';
+import { enhanceDescription, generateSmartTags } from '../services/gemini-service.js';
 
 export function initMediaForm() {
     const posterInput = document.getElementById('mPoster');
@@ -18,6 +19,10 @@ export function initMediaForm() {
     if (bannerInput) {
         bannerInput.addEventListener('input', (e) => updateImagePreview('bannerPreview', e.target.value));
     }
+
+    // AI Buttons
+    document.getElementById('btnEnhanceDesc').onclick = handleEnhanceDesc;
+    document.getElementById('btnGenTags').onclick = handleGenTags;
 }
 
 export function setMediaTypeUI(type) {
@@ -104,6 +109,7 @@ export async function handleSaveMedia() {
         duration: document.getElementById('mDuration').value,
         trailerUrl: extractUrl(rawTrailer),
         desc: document.getElementById('mDesc').value,
+        tags: document.getElementById('mTags').value,
         studio: document.getElementById('mStudio').value,
         distributor: document.getElementById('mDistributor').value,
         director: document.getElementById('mDirector').value,
@@ -231,9 +237,64 @@ async function selectTMDBItem(tmdbId) {
             if (details.banner) updateImagePreview('bannerPreview', details.banner);
 
             showToast(`"${details.title}" importado com sucesso!`, "success");
+
+            // Auto-generate tags after TMDB fetch if description exists
+            if (details.desc) {
+                handleGenTags();
+            }
         }
     } catch (err) {
         showToast("Erro ao obter detalhes do TMDB", "error");
+    }
+}
+
+async function handleEnhanceDesc() {
+    const title = document.getElementById('mTitle').value;
+    const desc = document.getElementById('mDesc').value;
+
+    if (!title || !desc) {
+        showToast("Preencha o título e a sinopse primeiro!", "warning");
+        return;
+    }
+
+    const btn = document.getElementById('btnEnhanceDesc');
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Melhorando...';
+    btn.disabled = true;
+
+    try {
+        const enhanced = await enhanceDescription(title, desc);
+        document.getElementById('mDesc').value = enhanced;
+        showToast("Sinopse aprimorada com IA!", "success");
+    } catch (err) {
+        showToast(err.message, "error");
+    } finally {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+    }
+}
+
+async function handleGenTags() {
+    const title = document.getElementById('mTitle').value;
+    const genre = document.getElementById('mGenre').value;
+    const desc = document.getElementById('mDesc').value;
+
+    if (!title || !desc) return;
+
+    const btn = document.getElementById('btnGenTags');
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
+    btn.disabled = true;
+
+    try {
+        const tags = await generateSmartTags(title, genre, desc);
+        document.getElementById('mTags').value = tags;
+        if (btn && btn.id === 'btnGenTags') showToast("Tags inteligentes geradas!", "success");
+    } catch (err) {
+        console.error(err);
+    } finally {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
     }
 }
 
@@ -254,6 +315,7 @@ export function fillFormForEdit(id) {
     document.getElementById('mDuration').value = item.duration || '';
     document.getElementById('mTrailer').value = item.trailerUrl || '';
     document.getElementById('mDesc').value = item.desc || '';
+    document.getElementById('mTags').value = item.tags || '';
     document.getElementById('mStudio').value = item.studio || '';
     document.getElementById('mDistributor').value = item.distributor || '';
     document.getElementById('mDirector').value = item.director || '';

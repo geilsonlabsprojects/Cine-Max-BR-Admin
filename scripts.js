@@ -272,17 +272,22 @@ function selectAll(c) {
 }
 
 function updateBulkBar() {
-    document.getElementById('bulkBar').classList.toggle('active', selected.size > 0);
-    document.getElementById('bulkCount').innerText = `${selected.size} selecionados`;
+    const bar = document.getElementById('bulkActions');
+    if (bar) {
+        bar.style.display = selected.size > 0 ? 'block' : 'none';
+        const btn = document.getElementById('btnDeleteSelected');
+        if (btn) btn.innerHTML = `<i class="fas fa-trash-alt me-2"></i> Excluir ${selected.size}`;
+    }
 }
 
 async function deleteBulk() {
-    if(confirm(`Excluir ${selected.size} itens selecionados?`)) {
+    if(confirm(`Deseja realmente excluir os ${selected.size} itens selecionados? Esta ação é irreversível!`)) {
         for(let id of selected) {
             const item = allMedia[id];
             await db.ref((item.isOld ? 'movies/' : 'media/') + id).remove();
         }
         selected.clear();
+        alert("Itens excluídos com sucesso!");
         location.reload();
     }
 }
@@ -382,6 +387,11 @@ function editMedia(id) {
 
 // --- Initialization ---
 function init() {
+    // Add event listeners for bulk actions
+    document.getElementById('selectAll')?.addEventListener('change', (e) => selectAll(e.target.checked));
+    document.getElementById('btnDeleteSelected')?.addEventListener('click', deleteBulk);
+    document.getElementById('search')?.addEventListener('input', filterList);
+
     // Load Franchises
     db.ref('franchises').on('value', snap => {
         const select = document.getElementById('mFranchise');

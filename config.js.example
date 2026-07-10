@@ -18,5 +18,8 @@ window.CINE_MAX_CONFIG = {
     FIREBASE_APP_ID: "1:1234567890:web:abcdef123456",
 
     // TMDB Configuration
-    TMDB_API_KEY: "SUA_CHAVE_TMDB_AQUI"
+    TMDB_API_KEY: "SUA_CHAVE_TMDB_AQUI",
+
+    // Google Gemini AI Configuration
+    GEMINI_API_KEY: "SUA_CHAVE_GEMINI_AQUI"
 };
