@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CINEMAX | Ultra Admin Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <a href="#" class="brand"><i class="fas fa-clapperboard"></i> <span>CINE<span>MAX</span></span></a>
+        <nav>
+            <div class="nav-item active" data-tab="dashboard"><i class="fas fa-chart-line"></i> <span>Dashboard</span></div>
+            <div class="nav-item" data-tab="add-media"><i class="fas fa-plus-circle"></i> <span>Novo Conteúdo</span></div>
+            <div class="nav-item" data-tab="catalog"><i class="fas fa-film"></i> <span>Biblioteca</span></div>
+            <div class="nav-item" data-tab="franchises"><i class="fas fa-layer-group"></i> <span>Franquias</span></div>
+            <div class="nav-item" data-tab="access-control"><i class="fas fa-key"></i> <span>Acessos</span></div>
+            <div class="nav-item" data-tab="info"><i class="fas fa-info-circle"></i> <span>Sobre o TMDb</span></div>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <!-- Dashboard -->
+        <div id="dashboard" class="tab-content active">
+            <h1 class="fw-800 mb-4">Painel de Controle</h1>
+            <div class="row g-4 mb-5">
+                <div class="col-md-3"><div class="stat-card"><h3 id="statMovies">0</h3><p>Filmes</p><i class="fas fa-film"></i></div></div>
+                <div class="col-md-3"><div class="stat-card"><h3 id="statSeries">0</h3><p>Séries</p><i class="fas fa-tv"></i></div></div>
+                <div class="col-md-3"><div class="stat-card"><h3 id="statFranchises">0</h3><p>Franquias</p><i class="fas fa-layer-group"></i></div></div>
+                <div class="col-md-3"><div class="stat-card"><h3 id="statViews">0</h3><p>Total de Views</p><i class="fas fa-eye"></i></div></div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="glass-card h-100">
+                        <h5 class="fw-bold mb-4">Distribuição do Catálogo</h5>
+                        <div style="height: 250px;">
+                            <canvas id="statsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="glass-card h-100">
+                        <h5 class="fw-bold mb-4">Ações Rápidas</h5>
+                        <div class="d-flex gap-3 flex-wrap">
+                            <button class="btn btn-outline-info quick-action-btn" onclick="document.querySelector('[data-tab=add-media]').click()">
+                                <i class="fas fa-plus-circle fa-2x"></i>
+                                <span class="small fw-bold">Novo Conteúdo</span>
+                            </button>
+                            <button class="btn btn-outline-warning quick-action-btn" onclick="document.querySelector('[data-tab=franchises]').click()">
+                                <i class="fas fa-layer-group fa-2x"></i>
+                                <span class="small fw-bold">Nova Franquia</span>
+                            </button>
+                            <button class="btn btn-outline-danger quick-action-btn" onclick="location.reload()">
+                                <i class="fas fa-sync-alt fa-2x"></i>
+                                <span class="small fw-bold">Sincronizar</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Media -->
+        <div id="add-media" class="tab-content">
+            <h1 class="fw-800 mb-4">Cadastrar Mídia</h1>
+            <div class="glass-card">
+                <div class="d-flex gap-2 mb-4">
+                    <button class="btn btn-dark active" id="typeM">FILME</button>
+                    <button class="btn btn-dark" id="typeS">SÉRIE</button>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <label class="small text-dim mb-1">Título no Brasil</label>
+                        <div class="input-group mb-3">
+                            <input type="text" id="mTitle" class="form-control-pro m-0">
+                            <button class="btn btn-outline-accent" id="btnFetchTMDB" style="border-radius: 0 14px 14px 0;"><i class="fas fa-magic"></i> BUSCAR TMDB</button>
+                        </div>
+                    </div>
+                    <div class="col-md-4"><label class="small text-dim mb-1">Ano</label><input type="number" id="mYear" class="form-control-pro"></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6"><label class="small text-dim mb-1">Título Original</label><input type="text" id="mOriginal" class="form-control-pro"></div>
+                    <div class="col-md-6">
+                        <label class="small text-dim mb-1">Franquia</label>
+                        <select id="mFranchise" class="form-control-pro">
+                            <option value="">Sem Franquia</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4"><label class="small text-dim mb-1">Estúdio</label><input type="text" id="mStudio" class="form-control-pro"></div>
+                    <div class="col-md-4"><label class="small text-dim mb-1">Distribuição</label><input type="text" id="mDistributor" class="form-control-pro"></div>
+                    <div class="col-md-4"><label class="small text-dim mb-1">Direção</label><input type="text" id="mDirector" class="form-control-pro"></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6"><label class="small text-dim mb-1">Gêneros (Ex: Ação, Drama)</label><input type="text" id="mGenre" class="form-control-pro"></div>
+                    <div class="col-md-3">
+                        <label class="small text-dim mb-1">Classificação</label>
+                        <select id="mRating" class="form-control-pro">
+                            <option value="L">L (Livre)</option>
+                            <option value="10">10+</option>
+                            <option value="12">12+</option>
+                            <option value="14">14+</option>
+                            <option value="16">16+</option>
+                            <option value="18">18+</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3"><label class="small text-dim mb-1">Duração</label><input type="text" id="mDuration" class="form-control-pro" placeholder="Ex: 2h 15min"></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-10"><label class="small text-dim mb-1">URL do Trailer (YouTube)</label><input type="text" id="mTrailer" class="form-control-pro"></div>
+                    <div class="col-md-2 d-flex align-items-end mb-3"><button class="btn btn-outline-info w-100" style="border-radius: 14px; padding: 11px;" id="btnPreviewTrailer"><i class="fas fa-play"></i> TESTAR</button></div>
+                </div>
+                <div id="trailerPreview" class="mb-4" style="display:none;"></div>
+
+                <label class="small text-dim mb-1">Sinopse</label>
+                <textarea id="mDesc" class="form-control-pro" rows="3"></textarea>
+
+                <div id="movieBox">
+                    <div class="row g-2 align-items-center mb-3">
+                        <div class="col-md-9"><label class="small text-dim mb-1">URL do Vídeo</label><textarea id="mUrl" class="form-control-pro m-0"></textarea></div>
+                        <div class="col-md-3 d-flex gap-2 align-items-end mb-3">
+                            <button class="btn btn-outline-info flex-grow-1" style="border-radius: 14px; padding: 11px;" id="btnPreviewVideo"><i class="fas fa-play"></i> TESTAR</button>
+                            <button class="btn btn-outline-warning" style="border-radius: 14px;" id="btnAnalyzeLink" title="Analisar Link"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="seriesBox" style="display:none;">
+                    <div id="seasonsRoot"></div>
+                    <button class="btn btn-sm btn-outline-secondary mb-4" id="btnAddSeason"><i class="fas fa-plus"></i> Temporada</button>
+                </div>
+
+                <div id="analysisResult" class="mb-4 small p-3 rounded" style="display:none; background: rgba(255,255,255,0.05); border: 1px solid var(--border);"></div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="small text-dim mb-1">URL Poster (Vertical)</label>
+                        <input type="text" id="mPoster" class="form-control-pro">
+                        <div id="posterPreview" class="preview-container" style="height: 200px;"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-dim mb-1">URL Banner (Horizontal)</label>
+                        <input type="text" id="mBanner" class="form-control-pro">
+                        <div id="bannerPreview" class="preview-container" style="height: 200px;"></div>
+                    </div>
+                </div>
+
+                <div class="form-check form-switch mb-4 mt-2">
+                    <input class="form-check-input" type="checkbox" id="mFeatured">
+                    <label class="form-check-label small fw-bold" for="mFeatured">DESTAQUE NA PÁGINA INICIAL</label>
+                </div>
+
+                <div class="d-flex flex-column gap-2">
+                    <button class="btn-premium" id="btnSaveMedia">PUBLICAR NO APP</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Catalog -->
+        <div id="catalog" class="tab-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="fw-800 m-0">Biblioteca</h1>
+                <div class="d-flex gap-3 w-50 justify-content-end">
+                    <div class="form-check d-flex align-items-center">
+                        <input class="form-check-input me-2" type="checkbox" id="selectAll">
+                        <label class="small text-dim" for="selectAll">Selecionar Todos</label>
+                    </div>
+                    <input type="text" id="search" class="form-control-pro w-50 m-0" placeholder="Buscar por título...">
+                </div>
+            </div>
+            <div id="mediaList"></div>
+        </div>
+
+        <!-- Franchises -->
+        <div id="franchises" class="tab-content">
+            <h1 class="fw-800 mb-4">Gerenciar Franquias</h1>
+            <div class="glass-card">
+                <div class="row g-2">
+                    <div class="col-10"><input type="text" id="fName" class="form-control-pro m-0" placeholder="Nome da Franquia (Ex: Marvel Cinematic Universe)"></div>
+                    <div class="col-2"><button class="btn-premium" id="btnSaveFranchise">CRIAR</button></div>
+                </div>
+            </div>
+            <div id="franchiseList"></div>
+        </div>
+
+        <!-- Access Control -->
+        <div id="access-control" class="tab-content">
+            <h1 class="fw-800 mb-4">Códigos de Acesso</h1>
+            <div class="glass-card mb-4">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="small text-dim mb-1">Nome do Usuário/Nota</label>
+                        <input type="text" id="acLabel" class="form-control-pro m-0" placeholder="Ex: João - VIP">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="small text-dim mb-1">Código de Acesso</label>
+                        <div class="input-group">
+                            <input type="text" id="acCode" class="form-control-pro m-0" readonly>
+                            <button class="btn btn-outline-accent" id="btnGenCode" style="border-radius: 0 14px 14px 0;"><i class="fas fa-random"></i> GERAR</button>
+                        </div>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn-premium w-100" id="btnSaveCode">SALVAR</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-0 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="ps-4">Usuário</th>
+                                <th>Código</th>
+                                <th>Criado em</th>
+                                <th class="text-end pe-4">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accessCodeList">
+                            <!-- Injected codes -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info TMDb -->
+        <div id="info" class="tab-content">
+            <h1 class="fw-800 mb-4">Sobre o TMDb</h1>
+            <div class="glass-card">
+                <h5 class="fw-bold mb-3">Integração com TMDb</h5>
+                <p class="text-dim">A CineMax utiliza os serviços do TMDb para garantir que seu catálogo esteja sempre atualizado com as melhores informações, imagens e trailers.</p>
+                <hr class="border-secondary opacity-25">
+                <h6 class="fw-bold mb-3">2. Para Desenvolvedores e Criadores</h6>
+                <p class="text-dim">O TMDb disponibiliza uma interface de programação de aplicativos (API) pública e gratuita. Desenvolvedores usam essa ferramenta para integrar capas, trailers e metadados em seus próprios aplicativos de filmes ou sites de recomendação.</p>
+            </div>
+        </div>
+    </main>
+
+    <div id="bulkBar" class="bulk-bar">
+        <span id="bulkCount">0 selecionados</span>
+        <button class="btn btn-danger btn-sm px-4 rounded-pill" id="btnDeleteBulk"><i class="fas fa-trash me-2"></i> EXCLUIR SELECIONADOS</button>
+    </div>
+
+    <!-- TMDB Selection Modal -->
+    <div class="modal fade" id="tmdbModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content glass-card p-0 border-0">
+                <div class="modal-header border-0 p-4">
+                    <h5 class="modal-title fw-800">Selecione o Resultado</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 pt-0">
+                    <div id="tmdbResults" class="row g-3">
+                        <!-- Results will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+        <div id="appToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <span id="toastMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Application Logic -->
+    <script type="module" src="assets/js/core/app.js"></script>
+</body>
+</html>
